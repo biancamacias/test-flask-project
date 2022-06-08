@@ -1,8 +1,10 @@
+import hashlib
+
 import flask
 from flask import Flask, abort, make_response, redirect, request, render_template, session, url_for
 from oauthlib.oauth2 import WebApplicationClient
 from google_auth_oauthlib.flow import Flow
-# from googleapiclient.discovery import build
+from googleapiclient.discovery import build
 import json
 import os
 
@@ -19,19 +21,17 @@ def get_all():
 os.environ['FLASK_APP'] = "app"
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-# set up flask
-app = Flask(__name__)
-
 # set up OAuth2.0 client
 CLIENT_ID, CLIENT_SECRET, REDIRECT_URI = get_all()
 CLIENT = WebApplicationClient(CLIENT_ID)
 
-# obtain user info and use scopes to identify app and specify scopes for requesting authorization
+# set up flask
+app = Flask(__name__)
+app.config['SECRET_KEY'] = CLIENT_SECRET
+
+# specify scopes for when requesting authorization
 # scopes can be changed to any applicable scopes that the app wants access to
 SCOPES = ["https://www.googleapis.com/auth/userinfo.profile"]
-flow = Flow.from_client_secrets_file(
-    "client_secrets.json",
-    scopes=SCOPES)
 
 
 def login_required(function):
@@ -51,6 +51,9 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    flow = Flow.from_client_secrets_file(
+        "client_secrets.json",
+        scopes=SCOPES)
     flow.redirect_uri = REDIRECT_URI
     auth_url, state = flow.authorization_url(access_type="offline", prompt="consent", include_granted_scopeds="true")
     session['state'] = state
@@ -59,7 +62,10 @@ def login():
 
 @app.route('/callback', methods=['GET', 'POST'])
 def callback():
-    flow.redirect_uri = url_for("oauth2callback", _external=True)
+    flow = Flow.from_client_secrets_file(
+        "client_secrets.json",
+        scopes=SCOPES)
+    flow.redirect_uri = url_for("callback", _external=True)
 
     auth_response = request.url
     flow.fetch_token(authorization_response=auth_response)
@@ -80,7 +86,7 @@ def callback():
         'scopes': creds.scopes
     }
 
-    return redirect(url_for('test'))
+    return redirect(url_for('/test'))
 
 
 @app.route('/test', methods=['GET', 'POST'])
@@ -113,3 +119,7 @@ def test_login():
 def logout():
     session.clear()
     return redirect("/")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
