@@ -2,7 +2,7 @@ import flask
 from flask import Flask, abort, make_response, redirect, request, render_template, session, url_for
 from oauthlib.oauth2 import WebApplicationClient
 from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
+# from googleapiclient.discovery import build
 import json
 import os
 
@@ -28,7 +28,7 @@ CLIENT = WebApplicationClient(CLIENT_ID)
 
 # obtain user info and use scopes to identify app and specify scopes for requesting authorization
 # scopes can be changed to any applicable scopes that the app wants access to
-SCOPES = []
+SCOPES = ["https://www.googleapis.com/auth/userinfo.profile"]
 flow = Flow.from_client_secrets_file(
     "client_secrets.json",
     scopes=SCOPES)
@@ -90,7 +90,7 @@ def test_login():
         return redirect('login')
 
     creds = google.oauth2.credentials.Credentials(**session['credentials'])
-    profile =
+    # profile =
 
     session['credentials'] = {
         'token': creds.token,
@@ -103,10 +103,10 @@ def test_login():
 
     creds = session['credentials']
 
-    serv = build("oauth2", "", credentials=creds)
-    user = serv.userinfo().get().execute()
+    # serv = build("oauth2", "", credentials=creds)
+    # user = serv.userinfo().get().execute()
 
-    return render_template("home.html", name=)
+    return render_template("home.html")
 
 
 @app.route('/logout', methods=['GET', 'POST'])
