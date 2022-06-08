@@ -5,6 +5,7 @@ from flask import Flask, abort, make_response, redirect, request, render_templat
 from oauthlib.oauth2 import WebApplicationClient
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
+import google.oauth2.credentials
 import json
 import os
 
@@ -32,16 +33,6 @@ app.config['SECRET_KEY'] = CLIENT_SECRET
 # specify scopes for when requesting authorization
 # scopes can be changed to any applicable scopes that the app wants access to
 SCOPES = ["https://www.googleapis.com/auth/userinfo.profile"]
-
-
-def login_required(function):
-    def wrapper(*args, **kwargs):
-        if "google_id" not in session:
-            return abort(401)
-        else:
-            return function()
-
-    return wrapper
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -81,16 +72,15 @@ def callback():
         'token': creds.token,
         'refresh_token': creds.refresh_token,
         'token_uri': creds.token_uri,
-        'CLIENT_ID': creds.client_id,
+        'client_id': creds.client_id,
         'client_secret': creds.client_secret,
         'scopes': creds.scopes
     }
 
-    return redirect(url_for('/test'))
+    return redirect(url_for('test_login'))
 
 
 @app.route('/test', methods=['GET', 'POST'])
-@login_required
 def test_login():
     if "credentials" not in session:
         return redirect('login')
@@ -102,7 +92,7 @@ def test_login():
         'token': creds.token,
         'refresh_token': creds.refresh_token,
         'token_uri': creds.token_uri,
-        'CLIENT_ID': creds.client_id,
+        'client_id': creds.client_id,
         'client_secret': creds.client_secret,
         'scopes': creds.scopes
     }
