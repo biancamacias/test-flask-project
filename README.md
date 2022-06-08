@@ -31,7 +31,7 @@ $ pip install -r requirements.txt
 5. Assuming you have a GCP project, [create an OAuth 2.0 Client ID](https://developers.google.com/identity/protocols/oauth2/openid-connect#appsetup) (if you haven't already). 
 6. **Set the redirect URI to be** `http://127.0.0.1:5000/callback`.
 7. Download the JSON file generated after creating the client ID and take note of the file path in the project. 
-You can simply add it to the repository. *Note: do not push this JSON file to any repository.*
+You can simply add it to the repository. *Note: do not push this JSON file to any repository publicly. Keep client secrets a secret.*
 
 8. Go through any `TODO` in `app.py` and set them accordingly, such as the path of the downloaded JSON file.
 
