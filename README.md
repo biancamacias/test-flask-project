@@ -39,3 +39,15 @@ You can simply add it to the repository. *Note: do not push this JSON file to an
 ```shell
 $ flask run
 ```
+
+## User Journey
+
+1. Login through `index.html` page, which redirects user to login with their Google/Gmail credentials.
+![index](https://user-images.githubusercontent.com/51244558/172948692-4388a306-3206-4143-a985-2e470362b9d1.png)
+
+2. Choose account.
+![login](https://user-images.githubusercontent.com/51244558/172948780-f77ab644-51bd-42c6-8502-1bb44e7b3289.png)
+
+3. View `home.html` and logout.
+![home](https://user-images.githubusercontent.com/51244558/172948825-80e6ccbf-e59b-4200-8059-87f28db916dc.png)
+
