@@ -1,5 +1,3 @@
-import hashlib
-
 import flask
 from flask import Flask, abort, make_response, redirect, request, render_template, session, url_for
 from oauthlib.oauth2 import WebApplicationClient
