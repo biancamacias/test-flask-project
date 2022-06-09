@@ -86,6 +86,7 @@ def get_name(profile):
     return profile['names'][0]['givenName']
 
 
+# NOTE: People API must be enabled to view user information
 @app.route('/test', methods=['GET', 'POST'])
 def test_login():
     if "credentials" not in session:
