@@ -33,6 +33,8 @@ app.config['SECRET_KEY'] = CLIENT_SECRET
 # specify scopes for when requesting authorization
 # scopes can be changed to any applicable scopes that the app wants access to
 SCOPES = ["https://www.googleapis.com/auth/userinfo.profile"]
+API_SERVICE = "people"
+API_VERSION = "v1"
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -80,13 +82,16 @@ def callback():
     return redirect(url_for('test_login'))
 
 
+def get_name(profile):
+    return profile['names'][0]['givenName']
+
+
 @app.route('/test', methods=['GET', 'POST'])
 def test_login():
     if "credentials" not in session:
         return redirect('login')
 
     creds = google.oauth2.credentials.Credentials(**session['credentials'])
-    # profile =
 
     session['credentials'] = {
         'token': creds.token,
@@ -97,12 +102,10 @@ def test_login():
         'scopes': creds.scopes
     }
 
-    creds = session['credentials']
-
-    # serv = build("oauth2", "", credentials=creds)
-    # user = serv.userinfo().get().execute()
-
-    return render_template("home.html")
+    serv = build(API_SERVICE, API_VERSION, credentials=creds)
+    profile = serv.people().get(resourceName="people/me", personFields="names").execute()
+    name = get_name(profile)
+    return render_template("home.html", name=name)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
