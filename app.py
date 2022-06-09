@@ -48,7 +48,10 @@ def login():
         "client_secrets.json",
         scopes=SCOPES)
     flow.redirect_uri = REDIRECT_URI
-    auth_url, state = flow.authorization_url(access_type="offline", prompt="consent", include_granted_scopeds="true")
+    auth_url, state = flow.authorization_url(
+        access_type="offline",
+        prompt="consent",
+        include_granted_scopeds="true")
     session['state'] = state
     return redirect(auth_url)
 
@@ -103,10 +106,12 @@ def test_login():
         'scopes': creds.scopes
     }
 
-    serv = build(API_SERVICE, API_VERSION, credentials=creds)
-    profile = serv.people().get(resourceName="people/me", personFields="names").execute()
-    name = get_name(profile)
-    return render_template("home.html", name=name)
+    service = build(API_SERVICE, API_VERSION, credentials=creds)
+    profile = service.people().get(
+        resourceName="people/me",
+        personFields="names")\
+        .execute()
+    return render_template("home.html", name=get_name(profile))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
