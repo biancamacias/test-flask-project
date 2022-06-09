@@ -1,10 +1,10 @@
+import google.oauth2.credentials
 import json
 import os
 from flask import Flask, make_response, redirect, request, render_template, session, url_for
 from oauthlib.oauth2 import WebApplicationClient
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-import google.oauth2.credentials
 
 
 # gets CLIENT_ID, CLIENT_SECRET, and applicable uris from client_secrets json file downloaded from api console
