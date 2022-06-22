@@ -63,6 +63,8 @@ def callback():
     auth_response = request.url
     flow.fetch_token(authorization_response=auth_response)
 
+    print("auth_response= ",auth_response)
+
     # verify state received matches session token
     if session['state'] != request.args['state']:
         res = make_response(json.dumps('Invalid state'), 401)
