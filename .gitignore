@@ -10,3 +10,4 @@
 /venv/
 /client_secrets.json/
 /.idea/
+/jwt_token/

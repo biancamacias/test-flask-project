@@ -63,7 +63,7 @@ def callback():
     auth_response = request.url
     flow.fetch_token(authorization_response=auth_response)
 
-    print("auth_response= ",auth_response)
+    print("auth_response= ", auth_response)
 
     # verify state received matches session token
     if session['state'] != request.args['state']:
@@ -108,7 +108,7 @@ def test_login():
     service = build(API_SERVICE, API_VERSION, credentials=creds)
     profile = service.people().get(
         resourceName="people/me",
-        personFields="names")\
+        personFields="names") \
         .execute()
     return render_template("home.html", name=get_name(profile))
 
