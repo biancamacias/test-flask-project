@@ -24,7 +24,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 # set up OAuth2.0 client
 CLIENT_ID, CLIENT_SECRET, REDIRECT_URI = get_all()
 CLIENT = WebApplicationClient(CLIENT_ID)
-GOOGLE_CCM_PUBLIC_CERT_URL = "https://www.googleapis.com/robot/v1/metadata/x509/cloud-commerce-partner@system.gserviceaccount.com"
+GOOGLE_CCM_PUBLIC_CERT = json.loads(requests.get("https://www.googleapis.com/robot/v1/metadata/x509/cloud-commerce-partner@system.gserviceaccount.com").text)
 
 # set up flask
 app = Flask(__name__)
@@ -40,32 +40,26 @@ API_VERSION = "v1"
 @app.route('/', methods=['GET', 'POST'])
 def initiate_sso():
     """Verifies JWT based on requirements at
-            https://cloud.google.com/marketplace/docs/partners/integrated-saas/frontend-integration#verify-jwt
+        https://cloud.google.com/marketplace/docs/partners/integrated-saas/frontend-integration#verify-jwt
+        and then initiates SSO
 
     Returns:
-        Redirect to SSO at /login or appropriate 401 response with error message
+        Redirect to SSO at /login or appropriate 401 response with descriptive error message
     """
     token = open("jwt_token", "r").readline()  # hardcoded token as do not have response yet from HTTP
     header, payload, signed_section, signature = jwt._unverified_decode(token)
-    kid = header['kid']
 
-    try:
-        public_jwt_cert = json.loads(requests.get(GOOGLE_CCM_PUBLIC_CERT_URL).text)[kid]
-    except ValueError:
-        print("Specified kid does not match a public Google certificate. Generate a new JWT or try again.")
-    aud = payload['aud']  # Put your API domain here
+    aud = payload['aud']  # Put API domain here
     try:
         # Verify JWT signature, exp claim, aud claim
-        verified_payload = jwt.decode(token, certs=public_jwt_cert, verify=True, audience=aud)
+        verified_payload = jwt.decode(token, certs=GOOGLE_CCM_PUBLIC_CERT, verify=True, audience=aud)
     except ValueError as e:
         res = make_response(json.dumps('Could not verify token: '+str(e)), 401)
         res.headers['Content-Type'] = "application/json"
         return res
 
     # Verify iss claim and sub
-    iss = payload['iss']
-    sub = payload['sub']
-    if iss == GOOGLE_CCM_PUBLIC_CERT_URL and sub is not None:
+    if payload['iss'] == GOOGLE_CCM_PUBLIC_CERT_URL and payload['sub'] is not None:
         user_identity = payload['google']['user_identity']
         return redirect((url_for('login', user_identity=user_identity)))
     else:
@@ -76,6 +70,12 @@ def initiate_sso():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Handles login by redirecting to authorization url with appropriate user_identity and setting session state for
+        later authentication
+
+    Returns:
+        Redirect to authorization URL
+    """
     flow = Flow.from_client_secrets_file(
         "client_secrets.json",
         scopes=SCOPES)
@@ -92,6 +92,13 @@ def login():
 
 @app.route('/callback', methods=['GET', 'POST'])
 def callback():
+    """
+    Handles callback after authentication and authorization. Verifies session state and access tokens before setting
+    session credentials and redirecting to appropriate home/dashboard page.
+
+    Return:
+         Redirect to home page or appropriate 401 response with error message if sessions do not match
+    """
     flow = Flow.from_client_secrets_file(
         "client_secrets.json",
         scopes=SCOPES)
@@ -102,7 +109,7 @@ def callback():
 
     print("auth_response= ", auth_response)
 
-    # verify state received matches session token
+    # Verify state received matches session token
     if session['state'] != request.args['state']:
         res = make_response(json.dumps('Invalid state'), 401)
         res.headers['Content-Type'] = "application/json"
